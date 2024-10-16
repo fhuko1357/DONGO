@@ -1,21 +1,25 @@
+name: CI
 
-name: Dispatch a SSH session
+on: [push, workflow_dispatch]
 
-on:
-  workflow_dispatch:
-    inputs:
-      os:
-        description: 'Leave only desired OS in the field'
-        required: true
-        default: 'ubuntu-24.04'
 jobs:
-  start_ssh_session:
-    runs-on: ${{ github.event.inputs.os }}
-    name: Start the SSH session
+  build:
+
+    runs-on: windows-latest
+
     steps:
-    - name: Start SSH session
-      uses: luchihoratiu/debug-via-ssh@main
-      with:
+    - name: Download
+      run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+    - name: Extract
+      run: Expand-Archive ngrok.zip
+    - name: Auth
+      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-        SSH_PASS: ${{ secrets.SSH_PASS }}
-        NGROK_TIMEOUT: 25001
+    - name: Enable TS
+      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+    - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+    - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "Jakarta123**" -Force)
+    - name: Create Tunnel
+      run: .\ngrok\ngrok.exe tcp 3389
